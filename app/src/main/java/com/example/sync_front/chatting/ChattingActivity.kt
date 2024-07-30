@@ -7,6 +7,8 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.provider.MediaStore
 import android.util.Log
 import android.view.View
@@ -250,15 +252,17 @@ class ChattingActivity : AppCompatActivity() {
             })
         )
 
-        compositeDisposable.add(
-            stompClient.send("/pub/room/detail/$roomName")
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(
-                    { Log.d("Chat", "Chat detail request sent for session $roomName")
-        }, { throwable ->
-            Log.e("Chat", "Failed to send chat detail request: ${throwable.localizedMessage}", throwable)
-        }))
+        Handler(Looper.getMainLooper()).postDelayed({
+            compositeDisposable.add(
+                stompClient.send("/pub/room/detail/$roomName")
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(
+                        { Log.d("Chat", "Chat detail request sent for session $roomName")
+                        }, { throwable ->
+                            Log.e("Chat", "Failed to send chat detail request: ${throwable.localizedMessage}", throwable)
+                        }))
+        }, 100)
     }
 
     private val singleImagePicker =
