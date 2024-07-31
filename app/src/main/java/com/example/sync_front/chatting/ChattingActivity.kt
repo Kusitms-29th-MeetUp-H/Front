@@ -193,8 +193,10 @@ class ChattingActivity : AppCompatActivity() {
     private fun setupClickListeners() {
         //번역 버튼 클릭 시
         binding.transBtn.setOnClickListener {
-            binding.typeTabs.visibility = View.VISIBLE
-            binding.languageTabs.visibility = View.VISIBLE
+            binding.typeTabs.visibility =
+                if (binding.typeTabs.visibility == View.GONE) View.VISIBLE else View.GONE
+            binding.languageTabs.visibility =
+                if (binding.languageTabs.visibility == View.GONE) View.VISIBLE else View.GONE
             tempMsg = binding.sendTxt.text.toString()
         }
 
