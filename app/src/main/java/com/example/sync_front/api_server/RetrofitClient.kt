@@ -55,5 +55,5 @@ class RetrofitClient {
     val openSyncService: OpenSyncService = retrofit.create(OpenSyncService::class.java)
     val reviewService = retrofit.create(ReviewService::class.java)
     val alarmService: AlarmSaveService = retrofit.create(AlarmSaveService::class.java)
-
+    val chatTransService: ChatTransService = retrofit.create(ChatTransService::class.java)
 }

@@ -14,12 +14,17 @@ import android.widget.Toast
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.databinding.adapters.TextViewBindingAdapter.setText
+import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.example.sync_front.R
 import com.example.sync_front.api_server.*
+import com.example.sync_front.data.model.ChatTransModel
 import com.example.sync_front.databinding.ActivityChattingBinding
 import com.example.sync_front.ui.main.my.ModProfileActivity
+import com.example.sync_front.ui.sync.SyncViewModel
+import com.google.android.material.tabs.TabLayout
 import com.google.gson.Gson
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
@@ -41,28 +46,33 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 class ChattingActivity : AppCompatActivity() {
     lateinit var binding: ActivityChattingBinding
-    lateinit var myName : String
+    lateinit var myName: String
+    lateinit var tempMsg: String
     lateinit var chattingList: MutableList<RoomMessageElementResponseDto>
     private lateinit var adapter: ChattingAdapter
-    private var authToken: String ?= null // 로그인 토큰
+    private var authToken: String? = null // 로그인 토큰
     private var plusToggle: Boolean = false // 사진 추가 버튼 활성화
-    private var selectedImg: String ?= null //선택한 이미지
+    private var selectedImg: String? = null //선택한 이미지
 
     private lateinit var stompClient: StompClient
     private val compositeDisposable = CompositeDisposable()
     val isUnexpectedClosed = AtomicBoolean(false)
-    private var roomName: String ?= "eksxhr"
-    private var sessionId: String ?= null // 세션id
+    private var roomName: String? = "eksxhr"
+    private var sessionId: String? = null // 세션id
     private val PICK_IMAGE_REQUEST = 1
+
+    private lateinit var viewModel: ChatViewModel
+
 
     @SuppressLint("CheckResult")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityChattingBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
+        setupTabs(binding.root)
         initialSetting()
         setupClickListeners()
+        observeViewModel()
 
         initStomp()
     }
@@ -88,16 +98,106 @@ class ChattingActivity : AppCompatActivity() {
         binding.memberCount.text = total.toString()
     }
 
+    private fun setupTabs(view: View) {
+        val typeTab = binding.typeTabs
+        typeTab.addTab(typeTab.newTab().setText("원문"))
+        typeTab.addTab(typeTab.newTab().setText("길게"))
+        typeTab.addTab(typeTab.newTab().setText("짧게"))
+        typeTab.addTab(typeTab.newTab().setText("친구같이"))
+        typeTab.addTab(typeTab.newTab().setText("공손하게"))
+
+        val languageTab = binding.languageTabs
+        languageTab.addTab(languageTab.newTab().setText("한국어"))
+        languageTab.addTab(languageTab.newTab().setText("영어"))
+        languageTab.addTab(languageTab.newTab().setText("일본어"))
+        languageTab.addTab(languageTab.newTab().setText("중국어"))
+        languageTab.addTab(languageTab.newTab().setText("독일어"))
+        languageTab.addTab(languageTab.newTab().setText("프랑스어"))
+        languageTab.addTab(languageTab.newTab().setText("스페인어"))
+
+        typeTab.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+            override fun onTabSelected(tab: TabLayout.Tab?) {
+                val selectedType = tab?.text.toString()
+                val selectedLanguage =
+                    languageTab.getTabAt(languageTab.selectedTabPosition)?.text.toString()
+
+                val requestBody = ChatTransModel(
+                    language = selectedLanguage,
+                    type = selectedType,
+                    message = tempMsg
+                )
+
+                // Assuming viewModel is already initialized
+                viewModel.chatTrans(requestBody)
+
+            }
+
+            override fun onTabUnselected(tab: TabLayout.Tab?) {
+            }
+
+            override fun onTabReselected(tab: TabLayout.Tab?) {
+            }
+        })
+
+        languageTab.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+            override fun onTabSelected(tab: TabLayout.Tab?) {
+                val selectedLanguage = tab?.text.toString()
+                val selectedType = typeTab.getTabAt(typeTab.selectedTabPosition)?.text.toString()
+
+                val requestBody = ChatTransModel(
+                    language = selectedLanguage,
+                    type = selectedType,
+                    message = tempMsg
+                )
+
+                // Assuming viewModel is already initialized
+                viewModel.chatTrans(requestBody)
+            }
+
+            override fun onTabUnselected(tab: TabLayout.Tab?) {
+            }
+
+            override fun onTabReselected(tab: TabLayout.Tab?) {
+            }
+        })
+
+    }
+
+    private fun observeViewModel() {
+        viewModel.response.observe(this, Observer { responseBody ->
+            responseBody.data?.let {
+                binding.sendTxt.setText(it.message)
+            }
+            println("Status: ${responseBody.status}")
+            println("Message: ${responseBody.message}")
+            println("Data: ${responseBody.data?.message}")
+        })
+
+        viewModel.error.observe(this, Observer { error ->
+            println("Error: $error")
+        })
+    }
+
     private fun setupClickListeners() {
+        //번역 버튼 클릭 시
+        binding.transBtn.setOnClickListener {
+            binding.typeTabs.visibility = View.VISIBLE
+            binding.languageTabs.visibility = View.VISIBLE
+            tempMsg = binding.sendTxt.text.toString()
+        }
+
         // 메세지 전송 버튼 클릭 시
         binding.sendBtn.setOnClickListener {
             val message = binding.sendTxt.text.toString().trim()
 
             if (message.isEmpty()) {
-                Toast.makeText(this@ChattingActivity, getString(R.string.input_message), Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    this@ChattingActivity,
+                    getString(R.string.input_message),
+                    Toast.LENGTH_SHORT
+                ).show()
                 return@setOnClickListener
-            }
-            else { // 메세지가 있다면 전송
+            } else { // 메세지가 있다면 전송
                 if (stompClient.isConnected()) {
                     Log.d("WebSocket", "연결됨")
                     sendMessage(message, selectedImg) // 전송
@@ -142,12 +242,14 @@ class ChattingActivity : AppCompatActivity() {
                     Log.d(TAG, "Stomp connection opened")
                     requestAndSubscribeToChatDetails(roomName!!)
                 }
+
                 LifecycleEvent.Type.ERROR -> {
                     Log.e(TAG, "Error", lifecycleEvent.exception)
                     if (lifecycleEvent.exception.message!!.contains("EOF")) {
                         isUnexpectedClosed.set(true)
                     }
                 }
+
                 LifecycleEvent.Type.CLOSED -> {
                     Log.d(TAG, "Stomp connection closed")
                     if (isUnexpectedClosed.get()) {
@@ -155,6 +257,7 @@ class ChattingActivity : AppCompatActivity() {
                         isUnexpectedClosed.set(false)
                     }
                 }
+
                 else -> {}
             }
         }
@@ -176,7 +279,7 @@ class ChattingActivity : AppCompatActivity() {
         val json = Gson().toJson(chatMessage)
 
 
-        Log.d("my log","보내는 정보 - ${json}")
+        Log.d("my log", "보내는 정보 - ${json}")
 
         stompClient.send("/pub/room/${roomName}", json).subscribe()
     }
@@ -184,72 +287,82 @@ class ChattingActivity : AppCompatActivity() {
     @SuppressLint("CheckResult")
     private fun requestAndSubscribeToChatDetails(roomName: String) {
         val topic = "/sub/room/$roomName"
-        compositeDisposable.add(stompClient.topic(topic)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({ stompMessage ->
-                Log.d("my log", "${stompMessage}")
+        compositeDisposable.add(
+            stompClient.topic(topic)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe({ stompMessage ->
+                    Log.d("my log", "${stompMessage}")
 
-                val messageType = JSONObject(stompMessage.payload).getString("messageType")
-                val dataJson = JSONObject(stompMessage.payload).getJSONObject("data").toString()
-                Log.d("my log", "data 값 - ${dataJson}")
+                    val messageType = JSONObject(stompMessage.payload).getString("messageType")
+                    val dataJson = JSONObject(stompMessage.payload).getJSONObject("data").toString()
+                    Log.d("my log", "data 값 - ${dataJson}")
 
-                val jsonObject = JSONObject(dataJson)
+                    val jsonObject = JSONObject(dataJson)
 
-                if (messageType == "messageDetail") { // 메세지 전체 출력일 때
-                    val chatMessageArray = jsonObject.getJSONArray("chatMessageList")
+                    if (messageType == "messageDetail") { // 메세지 전체 출력일 때
+                        val chatMessageArray = jsonObject.getJSONArray("chatMessageList")
 
-                    val chatMessageList = mutableListOf<RoomMessageElementResponseDto>()
+                        val chatMessageList = mutableListOf<RoomMessageElementResponseDto>()
 
-                    for (i in 0 until chatMessageArray.length()) {
-                        val chatMessageObject = chatMessageArray.getJSONObject(i)
-                        val userObject = chatMessageObject.getJSONObject("user")
-                        val user = ChatUserResponseDto(
-                            sessionId = userObject.getString("sessionId"),
-                            name = userObject.getString("name"),
-                            profile = userObject.getString("profile"),
-                            isOwner = userObject.getBoolean("isOwner")
+                        for (i in 0 until chatMessageArray.length()) {
+                            val chatMessageObject = chatMessageArray.getJSONObject(i)
+                            val userObject = chatMessageObject.getJSONObject("user")
+                            val user = ChatUserResponseDto(
+                                sessionId = userObject.getString("sessionId"),
+                                name = userObject.getString("name"),
+                                profile = userObject.getString("profile"),
+                                isOwner = userObject.getBoolean("isOwner")
+                            )
+                            val content = chatMessageObject.getString("content")
+                            val time = chatMessageObject.getString("time")
+                            val image = chatMessageObject.getString("image")
+
+                            Log.d("my log", "$image")
+
+                            val chatMessage =
+                                RoomMessageElementResponseDto(user, content, time, image)
+                            chatMessageList.add(chatMessage)
+                        }
+
+                        adapter.setData(chatMessageList)
+
+                    } else { // 하나씩 들어올 때
+                        val user = ChatUserResponseDto( // 수정 필요
+                            sessionId = jsonObject.getString("sessionId"),
+                            name = jsonObject.getString("userName"),
+                            profile = jsonObject.getString("profile"),
+                            isOwner = jsonObject.getBoolean("isOwner")
                         )
-                        val content = chatMessageObject.getString("content")
-                        val time = chatMessageObject.getString("time")
-                        val image = chatMessageObject.getString("image")
+                        val content = jsonObject.getString("content")
+                        val time = jsonObject.getString("time")
+                        val image = jsonObject.getString("image")
 
-                        Log.d("my log", "$image")
+                        val newChat = RoomMessageElementResponseDto(user, content, time, image)
 
-                        val chatMessage = RoomMessageElementResponseDto(user, content, time, image)
-                        chatMessageList.add(chatMessage)
+                        adapter.updateData(newChat)
                     }
 
-                    adapter.setData(chatMessageList)
+                    // RecyclerView의 스크롤을 맨 아래로 이동
+                    binding.chattingRecyclerview.scrollToPosition(adapter.itemCount - 1)
 
-                } else { // 하나씩 들어올 때
-                    val user = ChatUserResponseDto( // 수정 필요
-                        sessionId = jsonObject.getString("sessionId"),
-                        name = jsonObject.getString("userName"),
-                        profile = jsonObject.getString("profile"),
-                        isOwner = jsonObject.getBoolean("isOwner")
+                }, { throwable ->
+                    Log.e(
+                        "Stomp subscribe error",
+                        "Error on subscribe: ${throwable.localizedMessage}",
+                        throwable
                     )
-                    val content = jsonObject.getString("content")
-                    val time = jsonObject.getString("time")
-                    val image = jsonObject.getString("image")
-
-                    val newChat = RoomMessageElementResponseDto(user, content, time, image)
-
-                    adapter.updateData(newChat)
-                }
-
-                // RecyclerView의 스크롤을 맨 아래로 이동
-                binding.chattingRecyclerview.scrollToPosition(adapter.itemCount - 1)
-
-            }, { throwable ->
-                Log.e("Stomp subscribe error", "Error on subscribe: ${throwable.localizedMessage}", throwable)
-            })
+                })
         )
 
         compositeDisposable.add(stompClient.send("/pub/room/detail/$roomName").subscribe({
             Log.d("Chat", "Chat detail request sent for session $roomName")
         }, { throwable ->
-            Log.e("Chat", "Failed to send chat detail request: ${throwable.localizedMessage}", throwable)
+            Log.e(
+                "Chat",
+                "Failed to send chat detail request: ${throwable.localizedMessage}",
+                throwable
+            )
         }))
     }
 
@@ -275,7 +388,9 @@ class ChattingActivity : AppCompatActivity() {
                 this.contentResolver.takePersistableUriPermission(uri, flag)
 
                 val imagePart: MultipartBody.Part? = profileUri?.let {
-                    val file = File(ModProfileActivity.URIPathHelper().getPath(this, it) ?: return@let null)
+                    val file = File(
+                        ModProfileActivity.URIPathHelper().getPath(this, it) ?: return@let null
+                    )
                     val requestBody = RequestBody.create("image/*".toMediaTypeOrNull(), file)
                     MultipartBody.Part.createFormData("file", file.name, requestBody)
                 }

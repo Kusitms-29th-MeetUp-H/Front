@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -12,8 +11,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/white"
-        android:padding="16dp"
-        android:orientation="horizontal" >
+        android:orientation="horizontal"
+        android:padding="16dp">
 
         <ImageView
             android:id="@+id/back_btn"
@@ -25,37 +24,37 @@
 
         <TextView
             android:id="@+id/chatting_title"
+            style="@style/Body1_700"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="center"
             android:text="방 제목"
-            style="@style/Body1_700"
-            android:textColor="@color/gray_90"
-            android:layout_gravity="center"/>
+            android:textColor="@color/gray_90" />
 
         <TextView
             android:id="@+id/member_count"
+            style="@style/Body3_400"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="center"
             android:layout_marginLeft="8dp"
             android:text="8"
-            style="@style/Body3_400"
-            android:textColor="@color/gray_50"
-            android:layout_gravity="center"/>
+            android:textColor="@color/gray_50" />
 
     </LinearLayout>
 
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1" >
+        android:layout_weight="1">
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/chatting_recyclerview"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="@color/gray_5"
-            android:scrollbars="vertical"
-            android:paddingHorizontal="10dp" />
+            android:paddingHorizontal="10dp"
+            android:scrollbars="vertical" />
 
         <ImageView
             android:id="@+id/pic_btn"
@@ -64,20 +63,58 @@
             android:layout_gravity="bottom"
             android:layout_marginLeft="8dp"
             android:layout_marginBottom="8dp"
-            android:visibility="gone"
-            android:background="@drawable/btn_chatting_add_image" />
+            android:background="@drawable/btn_chatting_add_image"
+            android:visibility="gone" />
 
         <ImageView
             android:id="@+id/image"
             android:layout_width="100dp"
             android:layout_height="100dp"
-            android:scaleType="centerCrop"
-            android:visibility="gone"
             android:layout_gravity="bottom|end"
             android:layout_marginRight="10dp"
-            android:layout_marginBottom="8dp" />
+            android:layout_marginBottom="8dp"
+            android:scaleType="centerCrop"
+            android:visibility="gone" />
 
     </FrameLayout>
+
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/type_tabs"
+        android:layout_width="match_parent"
+        android:layout_height="38dp"
+        android:layout_gravity="left"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/label_gray5"
+        android:visibility="gone"
+        app:tabBackground="@drawable/tab_selected_selector_green"
+        app:tabIndicatorHeight="0dp"
+        app:tabMode="scrollable"
+        app:tabPaddingEnd="18dp"
+        app:tabPaddingStart="18dp"
+        app:tabSelectedTextColor="@color/white"
+        app:tabTextAppearance="@style/Body3_700"
+        app:tabTextColor="@color/gray_70">
+
+    </com.google.android.material.tabs.TabLayout>
+
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/language_tabs"
+        android:layout_width="match_parent"
+        android:layout_height="38dp"
+        android:layout_gravity="left"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/label_gray5"
+        android:visibility="gone"
+        app:tabBackground="@drawable/tab_selected_selector_green"
+        app:tabIndicatorHeight="0dp"
+        app:tabMode="scrollable"
+        app:tabPaddingEnd="18dp"
+        app:tabPaddingStart="18dp"
+        app:tabSelectedTextColor="@color/white"
+        app:tabTextAppearance="@style/Body3_700"
+        app:tabTextColor="@color/gray_70">
+
+    </com.google.android.material.tabs.TabLayout>
 
     <LinearLayout
         android:id="@+id/edit_layout"
@@ -85,7 +122,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:layout_marginBottom="26dp"
-        android:orientation="vertical" >
+        android:orientation="vertical">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -103,16 +140,22 @@
             <EditText
                 android:id="@+id/send_txt"
                 android:layout_width="0dp"
-                android:layout_weight="1"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="15dp"
                 android:layout_marginRight="5dp"
+                android:layout_weight="1"
                 android:background="@android:color/transparent"
                 android:hint="@string/input_message"
-                android:textSize="16dp"
-                android:textColorHint="#D8D8D8"
+                android:imeOptions="actionSend"
                 android:inputType="textMultiLine"
-                android:imeOptions="actionSend" />
+                android:textColorHint="#D8D8D8"
+                android:textSize="16dp" />
+
+            <ImageView
+                android:id="@+id/trans_btn"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:background="@drawable/ic_translation2" />
 
             <ImageView
                 android:id="@+id/send_btn"
