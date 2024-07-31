@@ -1,2 +1,4 @@
 -keep class id.zelory.compressor.** { *; }
 -keep interface id.zelory.compressor.** { *; }
+-keep class com.kakao.sdk.**.model.* { *; }
+-keep class * extends com.google.gson.TypeAdapter

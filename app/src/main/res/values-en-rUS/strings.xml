@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Sync-front</string>
+    <string name="app_name">Sync</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <!-- Home Fragment-->
@@ -288,5 +288,6 @@
     <string name="welcome_message">싱크에 가입했어요</string>
     <string name="greet_members">나의 싱크 채팅방에서 멤버들에게 인사해보세요!</string>
     <string name="do_check">확인</string>
+    <string name="literatureArt">문학/예술</string>
 
 </resources>

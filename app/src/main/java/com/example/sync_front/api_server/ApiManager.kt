@@ -545,6 +545,31 @@ object MypageManager {
         })
     }
 
+    fun modNotProfileMypage(authToken: String, request: ModProfileRequest,
+                  callback: (ModMypageResponse?) -> Unit) {
+        val apiService = RetrofitClient().mypageService
+
+        val call = apiService.modNotProfileMypage("application/json", authToken, request)
+
+        call.enqueue(object : Callback<ModMypageResponse> {
+            override fun onResponse(call: Call<ModMypageResponse>, response: Response<ModMypageResponse>) {
+                if (response.isSuccessful) {
+                    val userData = response.body()
+                    callback(userData) // 사용자 데이터 전달
+                } else {
+                    val errorBody = response.errorBody()?.string()
+                    Log.e("서버 테스트", "오류1: $errorBody")
+                    callback(null)
+                }
+            }
+
+            override fun onFailure(call: Call<ModMypageResponse>, t: Throwable) {
+                Log.e("서버 테스트", "오류2: ${t.message}")
+                callback(null)
+            }
+        })
+    }
+
     fun mySyncList(authToken: String, callback: (MySyncResponse?) -> Unit) {
         val apiService = RetrofitClient().mypageService
         val call = apiService.mySyncList("application/json", authToken)

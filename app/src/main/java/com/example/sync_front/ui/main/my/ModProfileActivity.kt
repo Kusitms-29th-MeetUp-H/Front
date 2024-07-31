@@ -18,6 +18,7 @@ import com.bumptech.glide.Glide
 import com.example.sync_front.R
 import com.example.sync_front.api_server.MypageManager
 import com.example.sync_front.data.model.ModMypageRequest
+import com.example.sync_front.data.model.ModProfileRequest
 import com.example.sync_front.data.model.OnboardingRequest
 import com.example.sync_front.databinding.ActivityModProfileBinding
 import com.google.gson.Gson
@@ -171,15 +172,23 @@ class ModProfileActivity : AppCompatActivity() {
         val requestDtoBody = RequestBody.create("application/json".toMediaTypeOrNull(), requestJson)
 
         if (authToken != null) {
-            MypageManager.modMypage(authToken!!,imagePart, requestDtoBody) { response ->
-                if (response != null) {
-                    Log.d("수정 완료", "")
-                    finish()
-                } else {
+            if (profile != null) {
+                MypageManager.modMypage(authToken!!,imagePart, requestDtoBody) { response ->
+                    if (response != null) {
+                        Log.d("수정 완료", "")
+                        finish()
+                    }
                 }
             }
-        } else {
+            else {
+                MypageManager.modNotProfileMypage(authToken!!, ModProfileRequest(existingImageUrl, name, gender, type, detailTypes)) {
+                    if (it != null) {
+                        Log.d("수정 완료", "")
+                        finish()
+                    }
+                }
             }
+        }
     }
 
     class URIPathHelper {

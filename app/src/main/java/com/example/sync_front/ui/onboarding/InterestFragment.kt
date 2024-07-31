@@ -14,6 +14,7 @@ import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.sync_front.R
 import com.example.sync_front.api_server.LoginManager.sendOnboarding
+import com.example.sync_front.api_server.image
 import com.example.sync_front.data.model.OnboardingRequest
 import com.example.sync_front.databinding.FragmentInterestBinding
 import com.example.sync_front.ui.main.my.ModProfileActivity
@@ -100,7 +101,7 @@ class InterestFragment : Fragment() {
 //                null
 //            }
 //        }
-        val imagePart: MultipartBody.Part? = profile?.let { getProfileImagePart(it) }
+        val imagePart: MultipartBody.Part? = profile.let { getProfileImagePart(it) }
 
         val request = OnboardingRequest(language, name, national, gender, univ, "", type, clickedItems)
 
@@ -117,14 +118,17 @@ class InterestFragment : Fragment() {
         }
     }
 
-    private fun getProfileImagePart(uri: Uri): MultipartBody.Part? {
-        val file = File(getRealPathFromURI(uri))
-        return if (file.exists()) {
+    private fun getProfileImagePart(uri: Uri?): MultipartBody.Part? {
+        var imageParts: MultipartBody.Part ?= null
+
+        if (uri != null) {
+            val file = File(getRealPathFromURI(uri))
             val requestBody = RequestBody.create("image/*".toMediaTypeOrNull(), file)
-            MultipartBody.Part.createFormData("profileImage", file.name, requestBody)
+            imageParts = MultipartBody.Part.createFormData("profileImage", file.name, requestBody)
         } else {
-            null
+            imageParts = null
         }
+        return imageParts
     }
 
     private fun getRealPathFromURI(uri: Uri): String {
@@ -152,7 +156,7 @@ class InterestFragment : Fragment() {
         val interest1 = SelectInterest("@drawable/ic_exchange_language", getString(R.string.foreignLanguage),
             listOf(getString(R.string.languageExchange), getString(R.string.tutoring), getString(R.string.study)))
         val interest2 = SelectInterest("@drawable/ic_culture", getString(R.string.cultureArt),
-            listOf(getString(R.string.movie), getString(R.string.drama), getString(R.string.art), getString(R.string.performance), getString(R.string.music)))
+            listOf(getString(R.string.literatureArt), getString(R.string.movie), getString(R.string.drama), getString(R.string.art), getString(R.string.performance), getString(R.string.music)))
         val interest3 = SelectInterest("@drawable/ic_travel", getString(R.string.travelCompanion),
             listOf(getString(R.string.sightseeing), getString(R.string.nature), getString(R.string.vacation)))
         val interest4 = SelectInterest("@drawable/ic_activity", getString(R.string.activity),

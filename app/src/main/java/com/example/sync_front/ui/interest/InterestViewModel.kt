@@ -38,6 +38,7 @@ class InterestViewModel(application: Application) : AndroidViewModel(application
                     if (response.isSuccessful) {
                         interestSyncs.postValue(response.body()?.data ?: listOf())
                     } else {
+                        interestSyncs.postValue(listOf())
                         if (response.code() == 401) { // 토큰 만료 체크
                             errorMessage.postValue("Token expired. Please log in again.")
                         } else {
@@ -47,6 +48,7 @@ class InterestViewModel(application: Application) : AndroidViewModel(application
                 }
 
                 override fun onFailure(call: Call<SyncResponse>, t: Throwable) {
+                    interestSyncs.postValue(listOf())
                     errorMessage.postValue(t.message ?: "Unknown error")
                 }
             })

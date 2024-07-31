@@ -13,6 +13,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.viewpager2.widget.ViewPager2
 import com.example.sync_front.R
+import com.example.sync_front.api_server.MypageManager
 import com.example.sync_front.data.model.Sync
 import com.example.sync_front.databinding.FragmentHomeBinding
 import com.example.sync_front.ui.alarm.AlarmActivity
@@ -63,9 +64,13 @@ class HomeFragment : Fragment() {
         val sharedPreferences =
             requireActivity().getSharedPreferences("my_token", Context.MODE_PRIVATE)
         name = sharedPreferences.getString("name", null)!!
+        val authToken = sharedPreferences.getString("auth_token", null)
 
-        binding.homeUsername.text = name
-
+        MypageManager.mypage(authToken!!, "한국어") { response ->
+            if (response?.status == 200) {
+                binding.homeUsername.text = response.data.name
+            }
+        }
     }
 
     private fun getCurrentLanguageForApi(): String? {
@@ -273,7 +278,7 @@ class HomeFragment : Fragment() {
         }
         binding.boxEtc.setOnClickListener {
             val intent = Intent(context, InterestActivity::class.java).apply {
-                putExtra("selectedTab", "")
+                putExtra("selectedTab", "기타")
             }
             startActivity(intent)
         }

@@ -55,11 +55,16 @@ class AlarmActivity : AppCompatActivity() {
 
     private fun subscribeToViewModel() {
         viewModel.notifications.observe(this) { notificationResponse ->
-            adapter.setAlarms(notificationResponse.alarmData)
+            //adapter.setAlarms(notificationResponse.alarmData)
+            if (notificationResponse == null || notificationResponse.alarmData.isNullOrEmpty()) {
+                adapter.setAlarms(emptyList()) // Clear data if the response is null or empty
+            } else {
+                adapter.setAlarms(notificationResponse.alarmData)
+            }
         }
 
         viewModel.errorMessage.observe(this) { errorMessage ->
-            Toast.makeText(this, errorMessage, Toast.LENGTH_LONG).show()
+            Toast.makeText(this, "알림이 없습니다", Toast.LENGTH_LONG).show()
         }
     }
 }

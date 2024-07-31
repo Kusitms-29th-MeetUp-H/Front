@@ -92,6 +92,10 @@ class SyncActivity : AppCompatActivity() {
                 .load(syncDetail.syncImage)
                 .into(binding.ivSyncImg)
 
+            Glide.with(binding.profileImg.context)
+                .load(syncDetail.userImage)
+                .into(binding.profileImg)
+
             // regularDate가 null인지 체크
             if (syncDetail.regularDate == null) {
                 // regularDate가 null이면, "일시"로 텍스트 설정
@@ -219,9 +223,15 @@ class SyncActivity : AppCompatActivity() {
         viewModel.graphDetails.observe(this, Observer { details ->
             if (details.data.isNotEmpty()) {
                 binding.tvGraph2.text = details.status
+                // details.status가 "요"로 끝나는지 확인
+                if (details.status.endsWith("요")) {
+                    binding.tvGraph3.text = ""
+                } else {
+                    binding.tvGraph3.text = suffix
+                }
             }
         })
-        binding.tvGraph3.text = suffix
+        //binding.tvGraph3.text = suffix
     }
 
 
@@ -292,6 +302,7 @@ class SyncActivity : AppCompatActivity() {
         ReviewManager.sendBookmark(token!!, request) {
             if (it!!.status == 200) {
                 binding.btnBookmark.isSelected = it.data == true
+                bookmark = !isBookmarked
             }
         }
     }

@@ -7,10 +7,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.sync_front.R
 import com.example.sync_front.api_server.RoomMessageElementResponseDto
-import com.example.sync_front.api_server.image
 import com.example.sync_front.databinding.ItemChattingMeBinding
 import com.example.sync_front.databinding.ItemChattingOtherBinding
-import com.google.common.base.Strings.isNullOrEmpty
 import java.text.SimpleDateFormat
 import java.util.*
 

@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Sync-front</string>
+    <string name="app_name">Sync</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <!-- Home Fragment-->
@@ -95,7 +95,8 @@
     <string name="tutoring">튜터링</string>
     <string name="study">스터디</string>
     <!--관심사2-->
-    <string name="cultureArt">문학/예술</string>
+    <string name="cultureArt">문화/예술</string>
+    <string name="literatureArt">문학/예술</string>
     <string name="movie">영화</string>
     <string name="drama">드라마</string>
     <string name="art">미술/디자인</string>

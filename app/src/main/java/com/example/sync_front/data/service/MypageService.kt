@@ -46,6 +46,13 @@ interface MypageService {
         @Part("editProfileRequest") editProfileRequest: RequestBody
     ): Call<ModMypageResponse>
 
+    @PATCH("mypage/profile")
+    fun modNotProfileMypage(
+        @Header("Content-Type") application: String,
+        @Header("Authorization") accessToken: String,
+        @Body request: ModProfileRequest
+    ): Call<ModMypageResponse>
+
     @GET("mypage/mysync")
     fun mySyncList(
         @Header("Content-Type") application: String,

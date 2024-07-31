@@ -63,9 +63,9 @@ class InterestActivity : AppCompatActivity() {
                     2 -> "여행/동행"
                     3 -> "액티비티"
                     4 -> "푸드드링크"
-                    else -> null
+                    else -> "기타"
                 }
-                type?.let {
+                type.let {
                     // 타입에 따라 ViewModel에서 데이터 불러오기
                     interestViewModel.fetchInterestSyncs(type = it)
                 }
@@ -102,12 +102,16 @@ class InterestActivity : AppCompatActivity() {
     }
 
     private fun observeViewModel() {
-        interestViewModel.interestSyncs.observe(this, { syncs ->
-            syncAdapter.updateSyncs(syncs)
-        })
+        interestViewModel.interestSyncs.observe(this) { syncs ->
+            if (syncs.isNullOrEmpty()) {
+                syncAdapter.updateSyncs(emptyList())
+            } else {
+                syncAdapter.updateSyncs(syncs)
+            }
+        }
         interestViewModel.errorMessage.observe(
             this,
-            { error -> Toast.makeText(this, error, Toast.LENGTH_SHORT).show() }
+            { error -> Toast.makeText(this, "해당 싱크가 없습니다", Toast.LENGTH_SHORT).show() }
         )
     }
 }

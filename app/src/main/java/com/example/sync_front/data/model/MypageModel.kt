@@ -29,6 +29,14 @@ data class ModMypageResponse(
     val data: String
 )
 
+data class ModProfileRequest(
+    val image: String?,
+    val name: String,
+    val gender: String,
+    val syncType: String,
+    val detailTypes: List<String>
+)
+
 data class MySyncResponse(
     val status: Int,
     val message: String,

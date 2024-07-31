@@ -5,6 +5,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import android.util.Log
 import com.bumptech.glide.Glide
+import com.example.sync_front.R
 import com.example.sync_front.data.model.Sync
 import com.example.sync_front.databinding.ItemSyncSquare2Binding
 import com.example.sync_front.databinding.ItemSyncSquareBinding
@@ -34,10 +35,16 @@ class SyncSquareAdapter2(
                 tvSyncLocation.text = sync.location
                 tvSyncCalendar.text = sync.date
                 syncIcBookmark.setOnClickListener {
-                    it.isSelected = !it.isSelected
+                    //it.isSelected = !it.isSelected
                 }
                 itemView.setOnClickListener {
                     onSyncClickListener.onSyncClick(sync)
+                }
+
+                if (sync.isMarked) {
+                    syncIcBookmark.setBackgroundResource(R.drawable.ic_bookmark_yes)
+                } else {
+                    syncIcBookmark.setBackgroundResource(R.drawable.ic_bookmark_no)
                 }
             }
         }

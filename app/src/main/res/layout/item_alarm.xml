@@ -9,9 +9,10 @@
 
     <com.google.android.material.imageview.ShapeableImageView
         android:id="@+id/iv_sync_img"
-        android:layout_width="76dp"
-        android:layout_height="76dp"
+        android:layout_width="28dp"
+        android:layout_height="28dp"
         android:scaleType="centerCrop"
+        android:layout_marginTop="14dp"
         android:src="@drawable/ic_alarm_chat"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
@@ -35,11 +36,15 @@
         <TextView
             android:id="@+id/tv_content"
             style="@style/Body3_700"
+            android:maxLines="1"
+            android:ellipsize="end"
             android:text="@string/test" />
 
         <TextView
             android:id="@+id/tv_detail_content"
             style="@style/Detail_400"
+            android:maxLines="1"
+            android:ellipsize="end"
             android:text="@string/test" />
 
         <TextView

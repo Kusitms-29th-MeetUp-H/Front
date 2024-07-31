@@ -7,6 +7,8 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.provider.MediaStore
 import android.util.Log
 import android.view.View
@@ -23,7 +25,6 @@ import com.example.sync_front.api_server.*
 import com.example.sync_front.data.model.ChatTransModel
 import com.example.sync_front.databinding.ActivityChattingBinding
 import com.example.sync_front.ui.main.my.ModProfileActivity
-import com.example.sync_front.ui.sync.SyncViewModel
 import com.google.android.material.tabs.TabLayout
 import com.google.gson.Gson
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -57,9 +58,8 @@ class ChattingActivity : AppCompatActivity() {
     private lateinit var stompClient: StompClient
     private val compositeDisposable = CompositeDisposable()
     val isUnexpectedClosed = AtomicBoolean(false)
-    private var roomName: String? = "eksxhr"
+    private var roomName: String? = null
     private var sessionId: String? = null // 세션id
-    private val PICK_IMAGE_REQUEST = 1
 
     private lateinit var viewModel: ChatViewModel
 
@@ -74,7 +74,7 @@ class ChattingActivity : AppCompatActivity() {
         setupClickListeners()
         observeViewModel()
 
-        initStomp()
+        //initStomp()
     }
 
     private fun initialSetting() {
@@ -96,6 +96,15 @@ class ChattingActivity : AppCompatActivity() {
 
         val total = intent.getIntExtra("total", 0)
         binding.memberCount.text = total.toString()
+
+        if (!::stompClient.isInitialized) {
+            initStomp()
+        } else {
+            // Reconnect if needed
+            if (stompClient.isConnected.not()) {
+                stompClient.connect()
+            }
+        }
     }
 
     private fun setupTabs(view: View) {
@@ -220,7 +229,6 @@ class ChattingActivity : AppCompatActivity() {
             if (!plusToggle) {
                 plusToggle = !plusToggle
                 binding.picBtn.visibility = View.VISIBLE
-                //binding.plusBtn.setBackgroundResource(R.drawable.)
             } else {
                 plusToggle = !plusToggle
                 binding.picBtn.visibility = View.GONE
@@ -235,6 +243,8 @@ class ChattingActivity : AppCompatActivity() {
     @SuppressLint("CheckResult")
     private fun initStomp() {
         stompClient = Stomp.over(Stomp.ConnectionProvider.OKHTTP, "wss://kusitms28.store/ws")
+
+        stompClient.connect()
 
         stompClient.lifecycle().subscribe { lifecycleEvent: LifecycleEvent ->
             when (lifecycleEvent.type) {
@@ -261,7 +271,7 @@ class ChattingActivity : AppCompatActivity() {
                 else -> {}
             }
         }
-        stompClient.connect()
+        //stompClient.connect()
     }
 
     private fun sendMessage(message: String, image: String?) {
@@ -355,27 +365,23 @@ class ChattingActivity : AppCompatActivity() {
                 })
         )
 
-        compositeDisposable.add(stompClient.send("/pub/room/detail/$roomName").subscribe({
-            Log.d("Chat", "Chat detail request sent for session $roomName")
-        }, { throwable ->
-            Log.e(
-                "Chat",
-                "Failed to send chat detail request: ${throwable.localizedMessage}",
-                throwable
+        Handler(Looper.getMainLooper()).postDelayed({
+            compositeDisposable.add(
+                stompClient.send("/pub/room/detail/$roomName")
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(
+                        {
+                            Log.d("Chat", "Chat detail request sent for session $roomName")
+                        }, { throwable ->
+                            Log.e(
+                                "Chat",
+                                "Failed to send chat detail request: ${throwable.localizedMessage}",
+                                throwable
+                            )
+                        })
             )
-        }))
-    }
-
-    private fun getRealPathFromURI(uri: Uri): String {
-        val cursor = contentResolver.query(uri, null, null, null, null)
-        cursor?.let {
-            it.moveToFirst()
-            val columnIndex = it.getColumnIndex(MediaStore.Images.ImageColumns.DATA)
-            val filePath = it.getString(columnIndex)
-            it.close()
-            return filePath ?: ""
-        }
-        return ""
+        }, 100)
     }
 
     private val singleImagePicker =

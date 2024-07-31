@@ -35,11 +35,13 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
                 if (response.isSuccessful) {
                     _notifications.postValue(response.body())
                 } else {
+                    _notifications.postValue(null)
                     errorMessage.postValue("Error: ${response.errorBody()?.string()}")
                 }
             }
 
             override fun onFailure(call: Call<NotificationResponse>, t: Throwable) {
+                _notifications.postValue(null)
                 errorMessage.postValue(t.message ?: "Unknown error")
             }
         })
