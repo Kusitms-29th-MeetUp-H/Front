@@ -18,6 +18,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.adapters.TextViewBindingAdapter.setText
 import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.example.sync_front.R
@@ -72,6 +73,8 @@ class ChattingActivity : AppCompatActivity() {
         setupTabs(binding.root)
         initialSetting()
         setupClickListeners()
+        viewModel = ViewModelProvider(this).get(ChatViewModel::class.java)
+
         observeViewModel()
 
         //initStomp()
